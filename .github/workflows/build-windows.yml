@@ -1,0 +1,104 @@
+name: Build Windows Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      draft:
+        description: 'Create as draft release'
+        required: true
+        default: 'true'
+        type: boolean
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+
+      - name: Get dependencies
+        working-directory: ./stellar_forge_flutter
+        run: flutter pub get
+
+      - name: Build Windows Release
+        working-directory: ./stellar_forge_flutter
+        run: |
+          flutter build windows --release --verbose
+
+      - name: Package Windows Build
+        shell: pwsh
+        run: |
+          $source = "stellar_forge_flutter\build\windows\x64\runner\Release"
+          $destination = "windows-build"
+          
+          New-Item -ItemType Directory -Force -Path $destination | Out-Null
+          Copy-Item -Path "$source\*" -Destination $destination -Recurse -Force
+          
+          # Create zip file
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::CreateFromDirectory("$destination", "stellar-forge-windows-${{ github.ref_name }}.zip")
+          
+          # Cleanup
+          Remove-Item -Recurse -Force $destination
+
+      - name: Get version from tag
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag -replace '^v', ''
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Generate Release Notes
+        id: release_notes
+        shell: pwsh
+        run: |
+          $latestTag = git describe --abbrev=0 --tags @(${{ github.ref_name }})~1 2>/dev/null || echo "Initial Release"
+          
+          if ($latestTag -eq "Initial Release") {
+            $changelog = "Initial Release`n`n🎮 Welcome to Stellar Forge!`n- All features included"
+          } else {
+            $changelog = git log $latestTag..${{ github.ref_name }} --pretty=format:"%h - %s (%ae)" 2>/dev/null || "Release ${{ github.ref_name }}"
+          }
+          
+          echo "changelog<<EOF" >> $env:GITHUB_OUTPUT
+          echo "$changelog" >> $env:GITHUB_OUTPUT
+          echo "EOF" >> $env:GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: stellar-forge-windows-${{ github.ref_name }}.zip
+          draft: ${{ github.event.inputs.draft == 'true' || false }}
+          prerelease: false
+          body: |
+            # Stellar Forge v${{ steps.version.outputs.version }}
+            
+            ## What's New
+            ${{ steps.release_notes.outputs.changelog }}
+            
+            ## Installation
+            1. Download `stellar-forge-windows-${{ github.ref_name }}.zip`
+            2. Extract the archive
+            3. Run `galactic.exe` (or your executable name)
+            
+            ## Updates
+            The game will automatically check for updates on startup. Updates will be applied in the background, and you can continue playing while the new version downloads and extracts!
+            
+            ---
+            Built with Flutter | Auto-update enabled
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

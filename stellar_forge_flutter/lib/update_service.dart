@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -8,8 +8,8 @@ import 'package:path/path.dart' as p;
 import 'package:archive/archive.dart';
 
 class UpdateService extends ChangeNotifier {
-  final String githubUser = 'YOUR_GITHUB_USER'; // To be replaced or configured
-  final String githubRepo = 'YOUR_GITHUB_REPO'; // To be replaced or configured
+  final String githubUser = 'runepro123'; // To be replaced or configured
+  final String githubRepo = 'stellar-forge'; // To be replaced or configured
 
   bool _isChecking = false;
   bool _isDownloading = false;

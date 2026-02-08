@@ -59,11 +59,15 @@ echo [INFO] Updating UpdateService with Repo: %GH_USER%/%GH_REPO%
 powershell -Command "(gc stellar_forge_flutter\lib\update_service.dart) -replace 'YOUR_GITHUB_USER', '%GH_USER%' -replace 'YOUR_GITHUB_REPO', '%GH_REPO%' | Out-File -encoding utf8 stellar_forge_flutter\lib\update_service.dart"
 
 echo [INFO] Committing changes and pushing tag...
-git add stellar_forge_flutter\lib\update_service.dart
+git add .
 git commit -m "Configure auto-updater for %GH_USER%/%GH_REPO%"
-git push origin main
+:: Try pushing to main then master to handle different default branch names
+git push origin main 2>nul || git push origin master
 
 :: Create and push tag to trigger GitHub Action
+:: Delete tag locally and remotely if it exists to allow re-running on same version
+git tag -d %TAG_VERSION% 2>nul
+git push origin :refs/tags/%TAG_VERSION% 2>nul
 git tag -a %TAG_VERSION% -m "Release %TAG_VERSION%"
 git push origin %TAG_VERSION%
 

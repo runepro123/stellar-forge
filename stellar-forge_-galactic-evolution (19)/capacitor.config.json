@@ -1,0 +1,17 @@
+{
+  "appId": "com.devcitystudio.StellarForge",
+  "appName": "Stellar Forge",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "allowNavigation": ["*"]
+  },
+  "plugins": {
+    "GameConnect": {
+      "appId": "434637107816"
+    }
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

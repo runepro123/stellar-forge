@@ -1,0 +1,28 @@
+{
+  "name": "stellar-forge-galactic",
+  "version": "2.2.0",
+  "main": "electron-main.js",
+  "description": "Stellar Forge - Advanced Incremental Evolution",
+  "author": "Dev City Studio",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "publish": "electron-builder --publish always",
+    "clean": "rimraf android node_modules www",
+    "android-add": "cap add android",
+    "android-sync": "node -e \"const fs=require('fs'); const path=require('path'); if(!fs.existsSync('www'))fs.mkdirSync('www'); ['index.html','index.js','App.js','constants.js','utils.js','modioService.js','cloudService.js'].forEach(f=>{if(fs.existsSync(f))fs.copyFileSync(f,'www/'+f)}); if(fs.existsSync('logo.png') && fs.existsSync('android/app/src/main/res')){ const res='android/app/src/main/res'; ['mipmap-mdpi','mipmap-hdpi','mipmap-xhdpi','mipmap-xxhdpi','mipmap-xxxhdpi'].forEach(d=>{ const dir=path.join(res,d); if(fs.existsSync(dir)){ fs.copyFileSync('logo.png', path.join(dir,'ic_launcher.png')); fs.copyFileSync('logo.png', path.join(dir,'ic_launcher_round.png')); } }); console.log('Assets synced to Android!'); }\" && cap sync android",
+    "android-open": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "5.7.4",
+    "@capacitor/cli": "5.7.4",
+    "@capacitor/core": "5.7.4",
+    "@capacitor/preferences": "5.0.7",
+    "@openforge/capacitor-game-connect": "5.0.2"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "electron-updater": "^6.1.7"
+  }
+}

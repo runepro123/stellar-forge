@@ -48,11 +48,13 @@ jobs:
           cd stellar_forge_flutter/${{ matrix.artifact_path }}
           zip -r ../../../../stellar-forge-${{ matrix.output_name }}.zip .
 
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
+      - name: Create Release and Upload binaries
+        uses: softprops/action-gh-release@v1
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: stellar-forge-${{ matrix.output_name }}.zip
-          asset_name: stellar-forge-${{ matrix.output_name }}.zip
-          tag: ${{ github.ref }}
-          overwrite: true
+          files: stellar-forge-${{ matrix.output_name }}.zip
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

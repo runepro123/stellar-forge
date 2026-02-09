@@ -28,6 +28,13 @@ jobs:
           flutter-version: '3.27.0'
           channel: 'stable'
 
+      - name: Show Flutter & Dart versions
+        shell: pwsh
+        run: |
+          Write-Host "--- Flutter & Dart versions (debug) ---"
+          flutter --version
+          dart --version
+
       - name: Get dependencies
         working-directory: ./stellar_forge_flutter
         run: flutter pub get

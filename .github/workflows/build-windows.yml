@@ -67,8 +67,10 @@ jobs:
       - name: Get version from tag
         id: version
         shell: pwsh
+        env:
+          CURRENT_TAG: ${{ github.ref_name }}
         run: |
-          $tag = "${{ github.ref_name }}"
+          $tag = $env:CURRENT_TAG
           $version = $tag -replace '^v', ''
           echo "version=$version" >> $env:GITHUB_OUTPUT
           echo "tag=$tag" >> $env:GITHUB_OUTPUT
@@ -76,8 +78,10 @@ jobs:
       - name: Generate Release Notes
         id: release_notes
         shell: pwsh
+        env:
+          CURRENT_TAG: ${{ github.ref_name }}
         run: |
-          $currentTag = '${{ github.ref_name }}'
+          $currentTag = $env:CURRENT_TAG
           $previousTag = $null
           try {
             # Attempt to find previous tag by asking git to describe the parent tag

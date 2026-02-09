@@ -54,7 +54,12 @@ jobs:
           
           # Create zip file
           Add-Type -AssemblyName System.IO.Compression.FileSystem
-          [System.IO.Compression.ZipFile]::CreateFromDirectory("$destination", "stellar-forge-windows-${{ github.ref_name }}.zip")
+          $zipPath = "stellar-forge-windows-${{ github.ref_name }}.zip"
+          if (Test-Path $zipPath) {
+            Write-Host "Zip already exists at $zipPath - removing before creating new archive"
+            Remove-Item -Force $zipPath
+          }
+          [System.IO.Compression.ZipFile]::CreateFromDirectory("$destination", $zipPath)
           
           # Cleanup
           Remove-Item -Recurse -Force $destination

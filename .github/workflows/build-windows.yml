@@ -77,14 +77,22 @@ jobs:
         id: release_notes
         shell: pwsh
         run: |
-          $latestTag = git describe --abbrev=0 --tags @(${{ github.ref_name }})~1 2>/dev/null || echo "Initial Release"
-          
-          if ($latestTag -eq "Initial Release") {
+          $currentTag = '${{ github.ref_name }}'
+          $previousTag = $null
+          try {
+            # Attempt to find previous tag by asking git to describe the parent tag
+            $previousTag = git describe --abbrev=0 --tags "$($currentTag)~1" 2>$null
+          } catch {
+            $previousTag = $null
+          }
+
+          if ([string]::IsNullOrEmpty($previousTag)) {
             $changelog = "Initial Release`n`n🎮 Welcome to Stellar Forge!`n- All features included"
           } else {
-            $changelog = git log $latestTag..${{ github.ref_name }} --pretty=format:"%h - %s (%ae)" 2>/dev/null || "Release ${{ github.ref_name }}"
+            $changelog = git log $previousTag..$currentTag --pretty=format:"%h - %s (%ae)" 2>$null
+            if ([string]::IsNullOrEmpty($changelog)) { $changelog = "Release $currentTag" }
           }
-          
+
           echo "changelog<<EOF" >> $env:GITHUB_OUTPUT
           echo "$changelog" >> $env:GITHUB_OUTPUT
           echo "EOF" >> $env:GITHUB_OUTPUT
